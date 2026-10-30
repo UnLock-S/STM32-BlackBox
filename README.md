@@ -4,6 +4,16 @@
 
 A single-board black box project based on the STM32F103C8T6, including FreeRTOS firmware, CubeMX configuration, a bootloader, Python host tools, and a CANoe test configuration. The application covers CAN, analog data acquisition, OLED display, SD card logging, and firmware updates. Feature completion is subject to the actual source code and verification on the target board.
 
+## 许可 / Licensing
+
+项目自有原创代码和文档采用 [MIT License](LICENSE)。第三方组件继续遵循各自许可：FreeRTOS 内核为 MIT，CMSIS 为 Apache-2.0，STM32 HAL、CMSIS-RTOS 适配层及部分 ST 链接脚本为 BSD-3-Clause。上位机外部依赖 `python-can` 为 LGPL-3.0-only，`pyserial` 为 BSD-3-Clause。
+
+Original project-owned code and documentation are available under the [MIT License](LICENSE). Third-party components retain their respective licenses: MIT for the FreeRTOS kernel, Apache-2.0 for CMSIS, and BSD-3-Clause for STM32 HAL, the CMSIS-RTOS adapter, and certain ST linker scripts. External host dependencies use LGPL-3.0-only for `python-can` and BSD-3-Clause for `pyserial`.
+
+项目 MIT 许可不覆盖第三方或来源待核实内容。组件路径、许可全文、分发注意事项及尚待核实的 CubeMX/Vector/字模来源，见[第三方许可与来源清单](THIRD_PARTY_NOTICES.md)和[许可目录](licenses/README.md)。
+
+The project MIT License excludes third-party content and content with unresolved provenance. See the [third-party inventory](THIRD_PARTY_NOTICES.md) and [license directory](licenses/README.md) for component paths, license texts, distribution considerations, and unresolved CubeMX, Vector, and glyph provenance.
+
 ## 工程布局 / Project Layout
 
 | 路径 / Path | 中文说明 | English Description |

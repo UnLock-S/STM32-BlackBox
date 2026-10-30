@@ -3,6 +3,9 @@
 !/.gitignore
 !/.gitattributes
 !/README.md
+!/LICENSE
+!/THIRD_PARTY_NOTICES.md
+!/licenses/
 !/fw/
 !/TestEnv/
 

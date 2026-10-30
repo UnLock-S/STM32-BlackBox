@@ -12,6 +12,7 @@
 CMakeLists.txt text eol=lf
 .gitignore text eol=lf
 .gitattributes text eol=lf
+LICENSE text eol=lf
 *.bat text eol=crlf
 *.cmd text eol=crlf
 *.ioc text eol=crlf
