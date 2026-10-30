@@ -1,0 +1,63 @@
+# Repository scope: firmware/configuration, PC tools, and test environment.
+/*
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/fw/
+!/TestEnv/
+
+# Local reference material and working records stay on this computer.
+/fw/docs/*
+!/fw/docs/WIRING.md
+!/fw/docs/DIAG-CODEGEN.md
+/fw/setup/*
+!/fw/setup/TOOLCHAIN-SETUP.md
+
+# Reproducible build/runtime output.
+build/
+build-*/
+out/
+dist/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.cache/
+*.log
+*.tmp
+*.tmp.*
+compile_commands.json
+*.elf
+*.hex
+*.bin
+*.map
+*.o
+*.obj
+*.d
+*.lst
+*.su
+*.a
+*.zip
+*.7z
+
+# Local credentials/settings.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+.vscode/*
+!.vscode/launch.json.template
+.DS_Store
+Thumbs.db
+*~
+
+# CANoe configuration is shared; session state and measurements are local.
+*.stcfg
+*.blf
+*.asc
+*.mf4
+*.mdf
+*.bak

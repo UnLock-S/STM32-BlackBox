@@ -1,0 +1,173 @@
+{
+  "ecu": {
+    "name": "SBB-F103C8T6",
+    "description": "SBB 单板黑匣子 ECU（ADC/OLED/SD/CAN + UDS on CAN OTA）",
+    "tx_id": "0x7E0",
+    "rx_id": "0x7E8",
+    "bus": "CAN 11-bit, 1 Mbps",
+    "isotp": {
+      "bs": 1,
+      "stmin_ms": 2,
+      "max_msg": 520,
+      "block_bytes": 512
+    }
+  },
+  "sessions": [
+    {
+      "id": "0x01",
+      "name": "Default",
+      "p2_ms": 50,
+      "p2star_ms": 5000
+    },
+    {
+      "id": "0x02",
+      "name": "Programming",
+      "p2_ms": 50,
+      "p2star_ms": 5000
+    },
+    {
+      "id": "0x03",
+      "name": "Extended",
+      "p2_ms": 50,
+      "p2star_ms": 5000
+    }
+  ],
+  "security": [
+    {
+      "level": "0x01/0x02",
+      "name": "ProgrammingUnlock",
+      "seed_len": 4,
+      "key_len": 4,
+      "algorithm": "key = CRC32(seed_be || SECRET)，SECRET='SBB1'（台架级）",
+      "max_attempts": 3,
+      "lockout_s": 10,
+      "nrc": {
+        "invalid_key": "0x35",
+        "delay_not_expired": "0x37"
+      }
+    }
+  ],
+  "dids": [
+    {
+      "id": "0xF186",
+      "name": "ActiveDiagnosticSession",
+      "desc": "当前诊断会话",
+      "len": 1,
+      "type": "u8",
+      "encoding": "1=Default 2=Programming 3=Extended"
+    },
+    {
+      "id": "0xF187",
+      "name": "BootloaderVersion",
+      "desc": "Bootloader 版本（ASCII）",
+      "len": 8,
+      "type": "ascii"
+    },
+    {
+      "id": "0xF190",
+      "name": "PartitionInfo",
+      "desc": "分区信息 16 B（boot base/size、app base/size、meta base）",
+      "len": 16,
+      "type": "bytes"
+    },
+    {
+      "id": "0xF1A0",
+      "name": "StagingStatus",
+      "desc": "SD 暂存区状态 8 B（magic、size、crc、state）",
+      "len": 8,
+      "type": "bytes"
+    }
+  ],
+  "routines": [
+    {
+      "id": "0xFF00",
+      "name": "EraseStaging",
+      "desc": "擦除 SD 卡尾暂存区（写 0xFF 到头块）",
+      "type": "start"
+    },
+    {
+      "id": "0xFF01",
+      "name": "VerifyStaging",
+      "desc": "校验暂存区镜像（magic/size/crc）",
+      "type": "start"
+    }
+  ],
+  "services": [
+    {
+      "sid": "0x10",
+      "name": "DiagnosticSessionControl",
+      "sub": [
+        "0x01",
+        "0x02",
+        "0x03"
+      ]
+    },
+    {
+      "sid": "0x11",
+      "name": "ECUReset",
+      "sub": [
+        "0x01"
+      ]
+    },
+    {
+      "sid": "0x22",
+      "name": "ReadDataByIdentifier",
+      "dids": [
+        "0xF186",
+        "0xF187",
+        "0xF190",
+        "0xF1A0"
+      ]
+    },
+    {
+      "sid": "0x27",
+      "name": "SecurityAccess",
+      "sub": [
+        "0x01",
+        "0x02"
+      ]
+    },
+    {
+      "sid": "0x31",
+      "name": "RoutineControl",
+      "sub": [
+        "0x01"
+      ],
+      "routines": [
+        "0xFF00",
+        "0xFF01"
+      ]
+    },
+    {
+      "sid": "0x34",
+      "name": "RequestDownload",
+      "note": "max 50 KB，写入 SD 暂存区"
+    },
+    {
+      "sid": "0x36",
+      "name": "TransferData",
+      "note": "每次 512 B（一个扇区）"
+    },
+    {
+      "sid": "0x37",
+      "name": "RequestTransferExit",
+      "note": "校验 CRC 后置升级标志"
+    },
+    {
+      "sid": "0x3E",
+      "name": "TesterPresent"
+    }
+  ],
+  "nrc": [
+    "0x12",
+    "0x13",
+    "0x22",
+    "0x24",
+    "0x31",
+    "0x33",
+    "0x35",
+    "0x37",
+    "0x72",
+    "0x78"
+  ]
+}

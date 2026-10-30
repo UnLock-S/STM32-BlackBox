@@ -1,0 +1,22 @@
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
+*.c text eol=lf
+*.h text eol=lf
+*.s text eol=lf
+*.ld text eol=lf
+*.cmake text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.txt text eol=lf
+CMakeLists.txt text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ioc text eol=crlf
+*.png binary
+*.jpg binary
+*.pdf binary
+# Preserve Vector project bytes, which may use a legacy encoding.
+/TestEnv/CANoe/*.cfg -text

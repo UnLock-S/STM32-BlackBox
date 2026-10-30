@@ -1,0 +1,58 @@
+{
+  "//": "═══════════════════════════════════════════════════════════════════════════",
+  "//1": "SBB 调试配置模板 —— VS Code + Cortex-Debug",
+  "//2": "═══════════════════════════════════════════════════════════════════════════",
+  "//3": "当前是 .template 后缀（VS Code 不会读取，因此不会报错）。",
+  "//4": "等 fw/build/ 里出现第一个 .elf 后，把本文件改名为 launch.json 即生效。",
+  "//5": "",
+  "//6": "前置：",
+  "//7": "  1) 另开一个终端跑  bash fw/tools/openocd.sh     （保持不关）",
+  "//8": "  2) 确认 3333 端口已监听",
+  "//9": "  3) 若用 J-Link 而非 CH347，把 servertype 换成 jlink 并删掉 openocdLaunchCommands",
+  "//10": "",
+  "//11": "占位符（改名时替换）：",
+  "//12": "  __ELF__   → 例如 ${workspaceFolder}/build/app/sbb_app.elf",
+  "//13": "  __SVD__   → STM32F103xx.svd 的绝对路径（外设寄存器视图用，可选）",
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "SBB · CH347 (SWD) · 连接已启动的 OpenOCD",
+      "type": "cortex-debug",
+      "request": "attach",
+      "cwd": "${workspaceFolder}",
+      "executable": "__ELF__",
+      "servertype": "external",
+      "gdbTarget": "localhost:3333",
+      "device": "STM32F103C8",
+      "interface": "swd",
+      "svdFile": "__SVD__",
+      "runToEntryPoint": "main",
+      "showDevDebugOutput": "raw",
+      "preLaunchTask": "",
+      "//": "attach 模式：OpenOCD 由 openocd.sh 单独启动，便于同时看它的 telnet 输出"
+    },
+    {
+      "name": "SBB · CH347 (SWD) · 由 VS Code 拉起 OpenOCD",
+      "type": "cortex-debug",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "executable": "__ELF__",
+      "servertype": "openocd",
+      "device": "STM32F103C8",
+      "svdFile": "__SVD__",
+      "configFiles": [
+        "__OPENOCD_CFG__/sbb-probe.cfg"
+      ],
+      "openOCDLaunchCommands": [
+        "adapter speed 1000"
+      ],
+      "searchDir": [
+        "__OPENOCD_CFG__/interface",
+        "__OPENOCD_CFG__",
+        "__XPACK_SCRIPTS__"
+      ],
+      "runToEntryPoint": "main",
+      "//": "launch 模式：Cortex-Debug 自己拉起 openocd；三处 __ 占位符都要替换成绝对路径（Windows 风格 C:/...）"
+    }
+  ]
+}

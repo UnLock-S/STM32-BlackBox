@@ -1,0 +1,25 @@
+// ─────────────────────────────────────────────────────────────────────────────
+//  TC-01：判定这颗 STM32F103C8T6 的实际 flash 容量（64 KB 还是 128 KB）
+// ─────────────────────────────────────────────────────────────────────────────
+//  为什么需要：蓝板常见两种 die —— 标称 C8T6(64K) 与 CB(C8T6 实为 128K die)。
+//  这决定 OTA 能否做 A/B 双槽。
+//
+//  用法（SEGGER J-Link Commander，非 OpenOCD）：
+//    JLink.exe -device STM32F103C8 -if SWD -speed 4000 -autoconnect 1 \
+//              -CommanderScript tools/tc01-flash-size.jlink
+//
+//  判据：
+//    0x1FFFF7E0  Flash size register，16 位，单位 KB
+//                 0x0040 = 64 KB（单槽）   0x0080 = 128 KB（可 A/B 双槽）
+//    0xE0042000  DBGMCU_IDCODE，DEV_ID 低 12 位
+//                 0x410 = F103 medium-density  → 与 C8T6 一致
+//    0x08000000  向量表首 4 字，确认 flash 可读（返回非 0xFFFFFFFF）
+//
+//  ⚠ 国产克隆 J-Link 注意：若 SEGGER 软件弹出固件升级提示，**一律拒绝**（可能变砖）。
+//  ⚠ Flash size register 可能被改标芯片伪造；若需铁证，再做一次「写 0x08010000 回读」测试。
+// ─────────────────────────────────────────────────────────────────────────────
+
+mem16 0x1FFFF7E0 1
+mem32 0xE0042000 1
+mem32 0x08000000 4
+q

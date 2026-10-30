@@ -1,0 +1,34 @@
+# ── 构建产物（不入库）──
+# 注意：.gitignore 里行内的 '#' 不是注释 —— 模式后面不能跟说明文字，
+# 否则整行（含说明）会变成一个匹配不上的模式，规则静默失效。
+build/
+
+# bin/ 下只入库 README.md；实际产物由下面这些扩展名规则忽略（可重建，无需入库）
+*.elf
+*.hex
+*.bin
+*.map
+*.o
+*.d
+*.lst
+*.su
+
+# ── 编辑器 / 工具生成的（不入库）──
+.vscode/launch.json
+.vscode/settings.json
+.vscode/c_cpp_properties.json
+compile_commands.json
+.cache/
+
+# ── 系统垃圾 ──
+.DS_Store
+Thumbs.db
+*~
+
+# ── 说明：以下文件**必须入库**，不要加进忽略 ──
+#   .vscode/launch.json.template    （Cortex-Debug 配置模板）
+#   third_party/**                  （内置依赖，见 VENDORED.md）
+
+# Vector CANdelaStudio 导出的模板/工程文件：本地参考用，不入库（授权+体积）
+diag/CANdelaStudio/
+diag/_ref/

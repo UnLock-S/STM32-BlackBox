@@ -1,0 +1,45 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  统一换行符策略 —— 保证本目录打包/克隆到任何平台都能直接构建
+# ─────────────────────────────────────────────────────────────────────────────
+#  为什么必须钉死：Windows 上 core.autocrlf 会把文本文件检出成 CRLF，
+#  而 CRLF 的 shell 脚本在 git-bash / Linux 下执行会报
+#      bash: $'\r': command not found
+#  这在"打包后拿到别的机器二次开发"时是致命的。所以仓库内一律存 LF。
+
+* text=auto eol=lf
+
+# ── 明确按文本 + LF（下面这些出错代价最大，单独列出）──
+*.sh            text eol=lf
+*.cfg           text eol=lf
+*.cmake         text eol=lf
+*.c             text eol=lf
+*.h             text eol=lf
+*.s             text eol=lf
+*.ld            text eol=lf
+*.md            text eol=lf
+*.txt           text eol=lf
+CMakeLists.txt  text eol=lf
+.gitignore      text eol=lf
+.gitattributes  text eol=lf
+
+# ── 二进制，禁止任何转换 ──
+*.png   binary
+*.jpg   binary
+*.pdf   binary
+*.elf   binary
+*.hex   binary
+*.bin   binary
+*.map   binary
+*.o     binary
+
+# ── CubeMX 工程文件：必须是 CRLF ──
+#   CubeMX 由 Java 在 Windows 上写出，值是 CRLF；而含冒号的值还要转义成 \:
+#   若被 eol=lf 转成 LF，CubeMX 每次打开都可能重写文件、产生假 diff
+*.ioc        text eol=crlf
+
+# ── CubeMX 导出的 CSV 也是 CRLF（csv pinout 的产物）──
+*.csv        text eol=crlf
+
+# Windows launcher scripts.
+*.bat        text eol=crlf
+*.cmd        text eol=crlf

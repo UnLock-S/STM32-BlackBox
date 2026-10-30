@@ -1,0 +1,3 @@
+# Dependencies for CAN/UDS host tools and serial acquisition.
+python-can==4.6.1
+pyserial==3.5
