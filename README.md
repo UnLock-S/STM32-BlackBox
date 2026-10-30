@@ -23,6 +23,111 @@ A single-board black box project based on the STM32F103C8T6, including FreeRTOS 
 
 This repository maintains development sources, configuration, and tooling. Hardware reference packages, requirements documents, working notes, build outputs, runtime logs, uploaded images, CANoe session state, and local editor settings remain local and are excluded from version control. Third-party sources retain the licenses in their respective directories. Compilers, Vector drivers, and commercial software installers are not included.
 
+## 外设引脚定义 / Peripheral Pin Assignments
+
+以下按外设模块分组，信号方向均以 MCU 为参照：`OUT` = MCU 输出，`IN` = MCU 输入，`I/O` = 双向。芯片脚号为 **STM32F103C8T6 LQFP48 封装脚号，不是开发板排针序号**。
+
+The tables below are grouped by peripheral. Directions are relative to the MCU: `OUT` = MCU output, `IN` = MCU input, and `I/O` = bidirectional. Package pin numbers refer to the **STM32F103C8T6 LQFP48 package, not the development board header positions**.
+
+核对依据：[CubeMX 配置](fw/cubemx/sbb-f103.ioc)、[封装引脚表](fw/cubemx/pinout-verified.csv)、[GPIO 宏定义](fw/cubemx/Core/Inc/main.h)、[外设初始化](fw/cubemx/Core/Src/stm32f1xx_hal_msp.c)及 `fw/App/bsp/` 驱动。模块供电与接线沿用[接线文档](fw/docs/WIRING.md)；本表不代表新增实板验证。
+
+Cross-checked against the linked CubeMX configuration, package pin table, GPIO definitions, peripheral initialization, and the drivers in `fw/App/bsp/`. Module power and wiring follow the [wiring guide](fw/docs/WIRING.md). This table does not imply additional board testing.
+
+### CAN 收发器 / CAN Transceiver
+
+| MCU 引脚 / Pin | 封装脚号 / Package Pin | 信号 / Signal | 方向 / Direction | 模块连接 / Module Connection |
+| --- | --- | --- | --- | --- |
+| PB9 | 46 | `CAN_TX` | OUT | 收发器 `TXD` / Transceiver `TXD` |
+| PB8 | 45 | `CAN_RX` | IN | 收发器 `RXD` / Transceiver `RXD` |
+| 3V3 | — | VIO | 电源 / Power | 当前野火模块 `VIO` / `VIO` on the current Wildfire module |
+| 5V | — | VCC | 电源 / Power | 模块 `5V` 主电源 / Module `5V` main supply |
+| GND | — | GND | 地 / Ground | 模块 `GND` / Module ground |
+
+CAN1 使用 **PB8/PB9 重映射**，当前配置为 1 Mbps。`CANH`、`CANL` 从收发器连接至 CAN 总线，不直接接 MCU；总线终端按实际拓扑配置。上表电源接法针对现有模块，其他模块按其实际接口定义连接。
+
+CAN1 uses **PB8/PB9 remapping** and is currently configured for 1 Mbps. Connect the transceiver's `CANH` and `CANL` to the CAN bus, rather than directly to the MCU, and configure termination for the actual topology. The power connections above apply to the current module; other modules require their own interface definitions.
+
+### SD 卡 / SD Card — SPI1
+
+| MCU 引脚 / Pin | 封装脚号 / Package Pin | 信号 / Signal | 方向 / Direction | 卡座连接 / Socket Connection |
+| --- | --- | --- | --- | --- |
+| PA4 | 14 | `SD_CS` | OUT | `CS`，软件片选、低有效 / Software chip select, active low |
+| PA5 | 15 | `SPI1_SCK` | OUT | `SCK` / `CLK` |
+| PA6 | 16 | `SPI1_MISO` | IN | `MISO` / `DO` |
+| PA7 | 17 | `SPI1_MOSI` | OUT | `MOSI` / `DI` |
+| 3V3 | — | VCC | 电源 / Power | 当前卡座 `VCC` / Current socket `VCC` |
+| GND | — | GND | 地 / Ground | 卡座 `GND` / Socket ground |
+
+使用 SPI Mode 0；PA4 是普通 GPIO，不使用硬件 NSS。现有卡座使用 3.3 V，带稳压或电平转换的其他模块需按模块定义核对。
+
+SPI Mode 0 is used. PA4 is a regular GPIO, with no hardware NSS. The current socket uses 3.3 V; check the specifications of other modules with regulators or level translators.
+
+### OLED 显示屏 / OLED Display — I²C1
+
+| MCU 引脚 / Pin | 封装脚号 / Package Pin | 信号 / Signal | 方向 / Direction | OLED 连接 / OLED Connection |
+| --- | --- | --- | --- | --- |
+| PB6 | 42 | `I2C1_SCL` | OUT，开漏 / Open-drain | `SCL` |
+| PB7 | 43 | `I2C1_SDA` | I/O，开漏 / Open-drain | `SDA` |
+| 3V3 | — | VCC | 电源 / Power | `VCC` |
+| GND | — | GND | 地 / Ground | `GND` |
+
+当前为 SSD1306 128×64 显示屏，驱动默认地址 `0x3C`。SCL/SDA 使用外部上拉至 3.3 V。当前生成代码将 I²C 初始化为 **25 kHz**，旧接线文档中的 100 kHz 描述不代表当前初始化值。
+
+The current display is an SSD1306 128×64, with a default driver address of `0x3C`. SCL/SDA use external pull-ups to 3.3 V. The current generated code initializes I²C at **25 kHz**; the 100 kHz description in the older wiring guide does not reflect the current initialization value.
+
+### 外部 ADC 与旋钮 / External ADC and Potentiometer — C0832C / ADC0832
+
+| ADC 信号 / Signal | ADC 芯片脚号 / IC Pin | MCU 引脚 / Pin | MCU 封装脚号 / Package Pin | 方向与接法 / Direction and Connection |
+| --- | --- | --- | --- | --- |
+| `CS` | 1 | PB12 | 25 | OUT，`C0832_CS`，低有效 / Active low |
+| `CH0` | 2 | — | — | 接电位器滑臂 / Connect to potentiometer wiper |
+| `CH1` | 3 | — | — | 当前未用，接 GND / Currently unused, connect to GND |
+| `GND` | 4 | GND | — | 共地 / Common ground |
+| `DI` | 5 | PB14 | 27 | OUT，`C0832_DI`，MCU → ADC |
+| `DO` | 6 | PB15 | 28 | IN，`C0832_DO`，ADC → MCU |
+| `CLK` | 7 | PB13 | 26 | OUT，`C0832_CLK` |
+| `VCC` | 8 | 5V | — | 当前 ADC 供电 / Current ADC supply |
+
+这四根数字信号使用 **GPIO 软件时序，不是硬件 SPI2**。ADC 芯片的 `DI` 是输入、`DO` 是输出，勿接反。现有驱动接线定义为电位器两端接 5V/GND、滑臂接 CH0，CH1 接地；这里的 5V 接法仅适用于当前外部 ADC，不能套用到 MCU 自带 ADC 输入。
+
+These four digital signals use **GPIO bit-banging, not hardware SPI2**. `DI` is the ADC input and `DO` is its output. The existing driver specifies a potentiometer connected across 5V/GND, its wiper connected to CH0, and CH1 grounded. This 5V wiring applies to the current external ADC and must not be applied to the MCU's internal ADC inputs.
+
+### USB-UART 调试串口 / USB-UART Debug Console — USART1
+
+| MCU 引脚 / Pin | 封装脚号 / Package Pin | 信号 / Signal | 方向 / Direction | 转接器连接 / Adapter Connection |
+| --- | --- | --- | --- | --- |
+| PA9 | 30 | `USART1_TX` | OUT | 转接器 `RXD` / Adapter `RXD` |
+| PA10 | 31 | `USART1_RX` | IN | 转接器 `TXD` / Adapter `TXD` |
+| GND | — | GND | 地 / Ground | 转接器 `GND` / Adapter ground |
+
+串口参数为 **115200、8N1**。TX/RX 交叉连接，转接器使用 3.3 V 逻辑电平；开发板独立供电时无需再连接转接器电源输出。
+
+The console uses **115200 baud, 8N1**. Cross-connect TX/RX and use 3.3 V logic levels. When the board is powered separately, no adapter power output connection is required.
+
+### SWD 调试与复位 / SWD Debug and Reset
+
+| 板端引脚 / Board Pin | 封装脚号 / Package Pin | 信号 / Signal | 探针连接 / Probe Connection |
+| --- | --- | --- | --- |
+| PA13 | 34 | `SWDIO` | `SWDIO`，双向数据 / Bidirectional data |
+| PA14 | 37 | `SWCLK` | `SWCLK`，探针 → MCU / Probe → MCU |
+| NRST | 7 | 低有效复位 / Active-low reset | `nRESET`，用于硬件复位 / For hardware reset |
+| 3V3 | — | 目标电平参考 / Target voltage reference | 探针 `VTref` 输入 / Probe `VTref` input |
+| GND | — | 地 / Ground | 探针 `GND` / Probe ground |
+
+`VTref` 是探针的电平参考输入，不能当作通用的供电输出；具体探针的供电脚需另行核对。工程保留 SWD，关闭 JTAG。
+
+`VTref` is the probe's voltage reference input, not a general power output. Check any probe power output separately. The project keeps SWD enabled and disables JTAG.
+
+### 板载 LED / Onboard LED
+
+| MCU 引脚 / Pin | 封装脚号 / Package Pin | 标签 / Label | 功能 / Function |
+| --- | --- | --- | --- |
+| PC13 | 2 | `LED_Pin` | 低电平点亮，高电平熄灭 / Low = on, high = off |
+
+所有外设与调试器必须共地。开发板上的 3V3/5V/GND 是电源网络名称，不是某个 GPIO；外设电源接法以当前模块版本为准。
+
+All peripherals and the debugger must share a common ground. The board's 3V3/5V/GND labels identify power nets, not GPIOs. Confirm peripheral power connections against the actual module revision.
+
 ## 固件构建 / Firmware Build
 
 安装 ARM GNU Toolchain、CMake、Ninja；Windows 使用 Git Bash。在仓库根目录运行：
